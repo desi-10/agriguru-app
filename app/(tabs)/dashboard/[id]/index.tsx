@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const ProduceDetailScreen = () => {
   const { id } = useLocalSearchParams();
-
+  const router = useRouter();
   const [produce, setProduce] = useState<Product | null>(null);
 
   useEffect(() => {
@@ -52,20 +52,36 @@ const ProduceDetailScreen = () => {
       <View
         style={{
           flexDirection: "row",
-          alignItems: "flex-end",
+          alignItems: "center",
           width: "100%",
+          justifyContent: "flex-end",
         }}
       >
-        <Link href="/(tabs)/dashboard/ProduceEdit" asChild>
-          <TouchableOpacity style={styles.editButton}>
-            <Ionicons name="pencil" size={15} color="gray" />
-            <Text style={{ color: "gray", marginLeft: 10 }}>Edit</Text>
-          </TouchableOpacity>
-        </Link>
+        {/* <Link href="/(tabs)/dashboard/ProduceEdit" asChild> */}
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: "/(tabs)/dashboard/ProduceEdit",
+              params: {
+                id: id,
+              },
+            });
+          }}
+          style={[
+            styles.editButton,
+            { backgroundColor: "#4CAF50", marginRight: 10, marginLeft: 10 },
+          ]}
+        >
+          <Ionicons name="pencil" size={15} color="white" />
+          <Text style={{ color: "white", marginLeft: 10 }}>Edit</Text>
+        </TouchableOpacity>
+        {/* </Link> */}
 
-        <TouchableOpacity style={styles.editButton}>
+        <TouchableOpacity
+          style={[styles.editButton, { backgroundColor: "red" }]}
+        >
           <Ionicons name="trash-bin" size={15} color="white" />
-          <Text style={{ color: "gray", marginLeft: 10 }}>Delete</Text>
+          <Text style={{ color: "white", marginLeft: 10 }}>Delete</Text>
         </TouchableOpacity>
       </View>
       <Text style={styles.title}>{produce?.produce.name}</Text>
@@ -143,7 +159,6 @@ const styles = StyleSheet.create({
   },
   editButton: {
     flexDirection: "row",
-    borderWidth: 1,
     padding: 10,
     borderRadius: 5,
     width: 100,
