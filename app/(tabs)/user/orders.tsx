@@ -4,7 +4,7 @@ import { useUser } from "@/components/userContext";
 
 const ViewOrders = () => {
   const { user } = useUser();
-  const orders = user?.orders || [];
+  //   const orders =  [];
 
   const renderOrder = ({ item }: { item: any }) => (
     <View style={styles.orderItem}>
@@ -18,7 +18,7 @@ const ViewOrders = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Your Orders</Text>
       <FlatList
-        data={orders}
+        data={[]}
         renderItem={renderOrder}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={

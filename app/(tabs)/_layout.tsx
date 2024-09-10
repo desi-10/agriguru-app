@@ -38,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: "Dashboard",
+          title: "Posts",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
