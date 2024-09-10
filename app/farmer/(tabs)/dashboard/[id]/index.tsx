@@ -41,7 +41,7 @@ const ProduceDetailScreen = () => {
       setIsDeleting(false);
       setModalVisible(false);
       Alert.alert("Success", "Produce deleted successfully");
-      router.push("/(tabs)/dashboard");
+      router.push("/farmer/(tabs)/dashboard");
     } catch (error) {
       setIsDeleting(false);
       Alert.alert("Error", "Failed to delete produce");
@@ -115,7 +115,7 @@ const ProduceDetailScreen = () => {
           <TouchableOpacity
             onPress={() => {
               router.push({
-                pathname: "/(tabs)/dashboard/ProduceEdit",
+                pathname: "/farmer/(tabs)/dashboard/ProduceEdit",
                 params: {
                   id: id,
                 },

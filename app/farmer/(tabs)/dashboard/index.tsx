@@ -80,7 +80,7 @@ const DashBoard = () => {
     <TouchableOpacity
       style={styles.productCard}
       onPress={() => {
-        router.push(`/dashboard/${item.id}`);
+        router.push(`/farmer/(tabs)/dashboard/${item.id}`);
       }}
     >
       <Image

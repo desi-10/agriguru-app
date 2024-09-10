@@ -74,7 +74,7 @@ const Homepage = () => {
     <TouchableOpacity
       style={styles.productCard}
       onPress={() => {
-        router.push(`/dashboard/${item.id}`);
+        router.push(`/admin/dashboard/${item.id}`);
       }}
     >
       <Image

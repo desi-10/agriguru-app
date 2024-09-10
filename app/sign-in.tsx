@@ -30,13 +30,17 @@ const LoginScreen = () => {
       );
 
       console.log("Sign-in successful:", data);
-      router.replace("/(tabs)/homepage");
       if (Platform.OS === "web") {
         localStorage.setItem("user", JSON.stringify(data));
       } else {
         await AsyncStorage.setItem("user", JSON.stringify(data));
       }
       setLoading(false);
+      if (data?.role?.toLowerCase() === "admin") {
+        router.replace("/admin/(tabs)/homepage");
+      } else {
+        router.replace("/farmer/(tabs)/dashboard");
+      }
     } catch (error) {
       setLoading(false);
       console.error("Sign-in error:", error);
