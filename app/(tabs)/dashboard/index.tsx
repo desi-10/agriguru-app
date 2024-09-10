@@ -104,35 +104,36 @@ const DashBoard = () => {
   const headerHeight = useHeaderHeight();
 
   return (
-    <ScrollView style={[styles.container]}>
-      {/* Product List */}
-      <Text
-        style={{
-          fontSize: 25,
-          fontWeight: "bold",
-          margin: 20,
-          textAlign: "center",
-          color: "#4CAF50",
-        }}
-      >
-        Manage your posts
-      </Text>
-      {loading ? (
-        <ActivityIndicator size="large" color="#4CAF50" />
-      ) : (
-        <FlatList
-          data={products}
-          renderItem={renderProduct}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={[
-            styles.productList,
-            { paddingBottom: headerHeight },
-          ]}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          ListFooterComponent={() => <View style={{ height: 100 }} />}
-        />
-      )}
+    <ScrollView>
+      <View style={[styles.container]}>
+        <Text
+          style={{
+            fontSize: 25,
+            fontWeight: "bold",
+            margin: 20,
+            textAlign: "center",
+            color: "#4CAF50",
+          }}
+        >
+          Manage your posts
+        </Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#4CAF50" />
+        ) : (
+          <FlatList
+            data={products}
+            renderItem={renderProduct}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={[
+              styles.productList,
+              { paddingBottom: headerHeight },
+            ]}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            ListFooterComponent={() => <View style={{ height: 100 }} />}
+          />
+        )}
+      </View>
     </ScrollView>
   );
 };
