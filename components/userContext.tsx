@@ -12,6 +12,8 @@ interface User {
   user_id: string;
   username: string;
   token: string;
+  farmer_id: number;
+  role: string;
 }
 
 interface UserContextType {

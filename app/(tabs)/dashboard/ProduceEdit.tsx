@@ -8,10 +8,13 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Picker,
+  Alert,
 } from "react-native";
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const ProduceEditScreen = () => {
   const { id } = useLocalSearchParams();
@@ -21,10 +24,12 @@ const ProduceEditScreen = () => {
   const [expectedQuantity, setExpectedQuantity] = useState("");
   const [pricePerTon, setPricePerTon] = useState("");
   const [expectedHarvestDate, setExpectedHarvestDate] = useState(new Date());
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isSoldOut, setIsSoldOut] = useState(false);
-  const [farmer, setFarmer] = useState("");
-  const [produceType, setProduceType] = useState(null);
+  const [farmer, setFarmer] = useState<any>();
+  const [produceType, setProduceType] = useState<any>();
   const [image, setImage] = useState("");
+
   useEffect(() => {
     const fetchProduce = async () => {
       const { data } = await axios.get(
@@ -58,12 +63,13 @@ const ProduceEditScreen = () => {
     };
 
     axios
-      .patch(`https://agriguru.pythonanywhere.com/api/posts/${id}/`, formData) // Adjust the URL accordingly
-      .then((response) => {
-        alert("Data updated successfully!");
+      .patch(`https://agriguru.pythonanywhere.com/api/posts/${id}/`, formData)
+      .then(() => {
+        Alert.alert("Success", "Data updated successfully!");
       })
       .catch((error) => {
-        console.error("There was an error updating the form!", error);
+        console.error("Error updating the form!", error);
+        Alert.alert("Error", "There was an issue updating the data.");
       });
   };
 
@@ -88,6 +94,19 @@ const ProduceEditScreen = () => {
       // TODO: Implement the actual image upload to your server here
       console.log("Image selected:", result.assets[0].uri);
     }
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date: Date) => {
+    setExpectedHarvestDate(date);
+    hideDatePicker();
   };
 
   return (
@@ -135,37 +154,32 @@ const ProduceEditScreen = () => {
       />
 
       <Text>Expected Harvest Date</Text>
-      {/* <DateTimePicker
-        value={expectedHarvestDate}
+      <TouchableOpacity onPress={showDatePicker} style={styles.dateButton}>
+        <Text style={styles.dateButtonText}>
+          {expectedHarvestDate.toDateString()}
+        </Text>
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
         mode="date"
-        display="default"
-        // onChange={(event, selectedDate) =>
-        //   setExpectedHarvestDate(selectedDate || expectedHarvestDate)
-        // }
-      /> */}
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+      />
 
       <Text>Is Sold Out</Text>
       <Switch value={isSoldOut} onValueChange={setIsSoldOut} />
 
-      {/* <Text>Farmer ID</Text>
-      <TextInput
+      <Text>Produce Type</Text>
+      <Picker
+        selectedValue={produceType}
         style={styles.input}
-        value={farmer}
-        onChangeText={setFarmer}
-        placeholder="Enter farmer ID"
-        keyboardType="numeric"
-      /> */}
-
-      {/* <Text>Produce</Text> */}
-      {/* <RNPickerSelect
-        // onValueChange={(value) => setProduceType(value)}
-        items={[
-          { label: "Maize", value: 1 },
-          { label: "Rice", value: 2 },
-          { label: "Tomatoes", value: 3 },
-        ]}
-        value={produceType}
-      /> */}
+        onValueChange={(itemValue) => setProduceType(itemValue)}
+      >
+        <Picker.Item label="Select produce" value="" />
+        <Picker.Item label="Maize" value="1" />
+        <Picker.Item label="Rice" value="2" />
+        <Picker.Item label="Tomatoes" value="3" />
+      </Picker>
 
       <TouchableOpacity style={styles.button} onPress={handleUpdate}>
         <Text style={styles.buttonText}>Update</Text>
@@ -177,25 +191,40 @@ const ProduceEditScreen = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    backgroundColor: "#f4f4f4",
+    flex: 1,
   },
   input: {
     height: 40,
-    borderColor: "gray",
+    borderColor: "#ccc",
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
+    borderRadius: 5,
+    backgroundColor: "white",
   },
   button: {
     backgroundColor: "#4CAF50",
     padding: 10,
     borderRadius: 5,
     marginTop: 20,
+    elevation: 3,
   },
   buttonText: {
     textAlign: "center",
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  dateButton: {
+    padding: 10,
+    backgroundColor: "#e7e7e7",
+    borderRadius: 5,
+    marginBottom: 12,
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: "#333",
   },
   image: {
     borderRadius: 10,

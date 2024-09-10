@@ -5,7 +5,7 @@ import { Redirect } from "expo-router";
 const ProtectedLogin = ({ children }: { children: React.ReactNode }) => {
   const { user } = useUser();
   if (user) {
-    return <Redirect href="/(tabs)/dashboard" />;
+    return <Redirect href="/(tabs)/homepage" />;
   }
   return children;
 };

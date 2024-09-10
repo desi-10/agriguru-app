@@ -1,28 +1,46 @@
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 
-const AgriGuruApp = () => {
+const AgriguruScreen = () => {
+  const router = useRouter();
   return (
     <View style={styles.container}>
-      {/* <Image source={require('./agriGuruLogo.png')} style={styles.logo} /> */}
-      <Text style={styles.title}>
-        Discover Your Potential Industrial Buyer Here
-      </Text>
-      <Text style={styles.subtitle}>
-        Sustainable practices and partnerships between industries and farmers
-        can yield a bountiful harvest for our shared future.
-      </Text>
-      <Link asChild href="/sign-in">
-        <TouchableOpacity style={styles.button}>
+      {/* Logo and Top Green Leaf */}
+      <View style={styles.topContainer}>
+        <Image
+          source={{ uri: "https://your-logo-url.png" }} // Replace with your logo URI
+          style={styles.logo}
+        />
+        <Text style={styles.title}>AGRIGURU</Text>
+      </View>
+
+      {/* Main Text */}
+      <View style={styles.textContainer}>
+        <Text style={styles.headerText}>
+          Discover Your Potential Industrial Buyer Here
+        </Text>
+        <Text style={styles.subText}>
+          Sustainable practices and partnerships between industries and farmers
+          can yield a bountiful harvest for our shared future.
+        </Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.signInButton}
+          onPress={() => router.push("/sign-in")}
+        >
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
-      </Link>
-      <Link asChild href="/sign-up">
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+
+        <TouchableOpacity
+          style={styles.signUpButton}
+          onPress={() => router.push("/sign-up")}
+        >
+          <Text style={styles.buttonTextSignUp}>Sign Up</Text>
         </TouchableOpacity>
-      </Link>
+      </View>
     </View>
   );
 };
@@ -30,36 +48,75 @@ const AgriGuruApp = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 20,
+  },
+  topContainer: {
+    alignItems: "center",
+    marginTop: 50,
   },
   logo: {
-    width: 150,
-    height: 150,
-    marginBottom: 20,
+    width: 50, // Adjust as necessary
+    height: 50, // Adjust as necessary
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
+    color: "#1E8449", // Dark Green color
+    marginTop: 10,
   },
-  subtitle: {
+  textContainer: {
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  headerText: {
+    fontSize: 24,
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "#1E8449", // Green color
+    marginBottom: 20,
+  },
+  subText: {
     fontSize: 16,
     textAlign: "center",
-    marginBottom: 30,
+    color: "#333",
+    marginBottom: 40,
   },
-  button: {
-    backgroundColor: "green",
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 50,
+  },
+  signInButton: {
+    flex: 1,
+    backgroundColor: "#1E8449", // Green color for Sign In
     padding: 15,
-    borderRadius: 5,
-    marginBottom: 10,
+    borderRadius: 10,
+    marginRight: 10,
+    alignItems: "center",
+  },
+  signUpButton: {
+    flex: 1,
+    backgroundColor: "#fff", // White background for Sign Up
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#1E8449", // Green border color
+    alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    textAlign: "center",
+    color: "#fff", // White text for Sign In
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  buttonTextSignUp: {
+    color: "#1E8449", // Green text for Sign Up
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 
-export default AgriGuruApp;
+export default AgriguruScreen;

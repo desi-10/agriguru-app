@@ -44,30 +44,24 @@ export interface Product {
   // ... other product properties ...
 }
 
-const DashBoard = () => {
+const Homepage = () => {
   const { user } = useUser();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Replace with your API URL
   const fetchProducts = async () => {
-    setLoading(true);
     try {
       const { data } = await axios.get(
-        "https://agriguru.pythonanywhere.com/api/posts/",
-        {
-          params: {
-            user_id: user?.user_id,
-          },
-        }
+        "https://agriguru.pythonanywhere.com/api/posts/"
       );
       console.log(data);
       setProducts(data); // Assuming data is an array of products
-      setLoading(false);
     } catch (error) {
-      setLoading(false);
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -115,7 +109,7 @@ const DashBoard = () => {
           color: "#4CAF50",
         }}
       >
-        Manage your posts
+        Welcome to Agriguru
       </Text>
       {loading ? (
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -133,15 +127,6 @@ const DashBoard = () => {
           ListFooterComponent={() => <View style={{ height: 100 }} />}
         />
       )}
-
-      {loading !== true && (
-        <TouchableOpacity
-          style={styles.floatingButton}
-          onPress={() => router.push("/(tabs)/dashboard/createPost")}
-        >
-          <Text style={styles.addIcon}>+</Text>
-        </TouchableOpacity>
-      )}
     </ScrollView>
   );
 };
@@ -151,7 +136,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
     padding: 10,
-    position: "relative",
   },
   header: {
     flexDirection: "row",
@@ -247,4 +231,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DashBoard;
+export default Homepage;

@@ -16,8 +16,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const LoginScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const handleSignIn = async () => {
+    setLoading(true);
     try {
       const { data } = await axios.post(
         "https://agriguru.pythonanywhere.com/api/auth/login/",
@@ -28,13 +30,15 @@ const LoginScreen = () => {
       );
 
       console.log("Sign-in successful:", data);
-      router.push("/(tabs)/dashboard");
+      router.push("/(tabs)/homepage");
       if (Platform.OS === "web") {
         localStorage.setItem("user", JSON.stringify(data));
       } else {
         await AsyncStorage.setItem("user", JSON.stringify(data));
       }
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error("Sign-in error:", error);
       Alert.alert("Error", "Failed to sign in. Please try again.");
     }
@@ -76,7 +80,9 @@ const LoginScreen = () => {
 
       {/* Sign In Button */}
       <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
-        <Text style={styles.signInButtonText}>Sign in</Text>
+        <Text style={styles.signInButtonText}>
+          {loading ? "Loading..." : "Sign in"}
+        </Text>
       </TouchableOpacity>
 
       {/* Create new account */}

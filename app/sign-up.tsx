@@ -15,13 +15,11 @@ const CreateAccountScreen = () => {
   const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSignUp = async () => {
-    console.log(username);
-    console.log(phoneNumber);
-    console.log(password);
-
+    setLoading(true);
     try {
       const { data } = await axios.post(
         "https://agriguru.pythonanywhere.com/api/auth/register/",
@@ -34,6 +32,7 @@ const CreateAccountScreen = () => {
       );
       console.log(data);
 
+      setLoading(false);
       router.push({
         pathname: "/otp",
         params: {
@@ -45,6 +44,7 @@ const CreateAccountScreen = () => {
       console.error("Sign-up error:", error);
       Alert.alert("Error", "Failed to create account. Please try again.");
     }
+    setLoading(false);
   };
 
   return (
@@ -90,7 +90,9 @@ const CreateAccountScreen = () => {
       {/* Sign Up Button */}
 
       <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-        <Text style={styles.signUpButtonText}>Sign up</Text>
+        <Text style={styles.signUpButtonText}>
+          {loading ? "Loading..." : "Sign up"}
+        </Text>
       </TouchableOpacity>
 
       {/* Already have an account */}

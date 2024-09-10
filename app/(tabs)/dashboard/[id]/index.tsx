@@ -8,30 +8,85 @@ import {
   Button,
   StyleSheet,
   TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Product } from "..";
 import { Ionicons } from "@expo/vector-icons";
+import { useUser } from "@/components/userContext";
 
 const ProduceDetailScreen = () => {
+  const { user } = useUser();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [produce, setProduce] = useState<Product | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchProduce = async () => {
       const { data } = await axios.get(
         `https://agriguru.pythonanywhere.com/api/posts/${id}`
       );
-      console.log(data);
       setProduce(data);
     };
     fetchProduce();
   }, [id]);
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await axios.delete(`https://agriguru.pythonanywhere.com/api/posts/${id}`);
+      setIsDeleting(false);
+      setModalVisible(false);
+      Alert.alert("Success", "Produce deleted successfully");
+      router.push("/(tabs)/dashboard");
+    } catch (error) {
+      setIsDeleting(false);
+      Alert.alert("Error", "Failed to delete produce");
+    }
+  };
+
   return (
     <View style={styles.container}>
+      <Modal
+        transparent={true}
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Confirm Deletion</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to delete this produce? This action cannot
+              be undone.
+            </Text>
+            {isDeleting ? (
+              <ActivityIndicator size="large" color="#4CAF50" />
+            ) : (
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: "gray" }]}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={{ color: "white" }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: "red" }]}
+                  onPress={handleDelete}
+                >
+                  <Text style={{ color: "white" }}>Delete</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
       <View style={{ position: "relative" }}>
-        <Image source={{ uri: produce?.produce.image }} style={styles.image} />
+        <Image source={{ uri: produce?.image || "" }} style={styles.image} />
         <View
           style={[
             produce?.is_sold_out
@@ -41,11 +96,7 @@ const ProduceDetailScreen = () => {
           ]}
         >
           <Text style={styles.availabilityText}>
-            {produce?.is_sold_out ? (
-              <Text>SOLD OUT</Text>
-            ) : (
-              <Text>AVAILABLE</Text>
-            )}
+            {produce?.is_sold_out ? "SOLD OUT" : "AVAILABLE"}
           </Text>
         </View>
       </View>
@@ -57,32 +108,34 @@ const ProduceDetailScreen = () => {
           justifyContent: "flex-end",
         }}
       >
-        {/* <Link href="/(tabs)/dashboard/ProduceEdit" asChild> */}
-        <TouchableOpacity
-          onPress={() => {
-            router.push({
-              pathname: "/(tabs)/dashboard/ProduceEdit",
-              params: {
-                id: id,
-              },
-            });
-          }}
-          style={[
-            styles.editButton,
-            { backgroundColor: "#4CAF50", marginRight: 10, marginLeft: 10 },
-          ]}
-        >
-          <Ionicons name="pencil" size={15} color="white" />
-          <Text style={{ color: "white", marginLeft: 10 }}>Edit</Text>
-        </TouchableOpacity>
-        {/* </Link> */}
-
-        <TouchableOpacity
-          style={[styles.editButton, { backgroundColor: "red" }]}
-        >
-          <Ionicons name="trash-bin" size={15} color="white" />
-          <Text style={{ color: "white", marginLeft: 10 }}>Delete</Text>
-        </TouchableOpacity>
+        {produce?.farmer.id === user?.farmer_id && (
+          <TouchableOpacity
+            onPress={() => {
+              router.push({
+                pathname: "/(tabs)/dashboard/ProduceEdit",
+                params: {
+                  id: id,
+                },
+              });
+            }}
+            style={[
+              styles.editButton,
+              { backgroundColor: "#4CAF50", marginRight: 10 },
+            ]}
+          >
+            <Ionicons name="pencil" size={15} color="white" />
+            <Text style={{ color: "white", marginLeft: 10 }}>Edit</Text>
+          </TouchableOpacity>
+        )}
+        {produce?.farmer.id === user?.farmer_id && (
+          <TouchableOpacity
+            style={[styles.editButton, { backgroundColor: "red" }]}
+            onPress={() => setModalVisible(true)}
+          >
+            <Ionicons name="trash-bin" size={15} color="white" />
+            <Text style={{ color: "white", marginLeft: 10 }}>Delete</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <Text style={styles.title}>{produce?.produce.name}</Text>
       <Text style={styles.text}>
@@ -100,9 +153,6 @@ const ProduceDetailScreen = () => {
       <Text style={styles.text}>
         <Text style={styles.bold}>Harvest Date: </Text>
         {produce?.expected_harvest_date}
-      </Text>
-      <Text style={styles.text}>
-        <Text></Text>
       </Text>
     </View>
   );
@@ -153,10 +203,6 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     alignItems: "center",
   },
-  quantityText: {
-    color: "white",
-    fontSize: 18,
-  },
   editButton: {
     flexDirection: "row",
     padding: 10,
@@ -167,9 +213,40 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderColor: "gray",
   },
-  editButtonText: {
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: 300,
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalText: {
     fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    padding: 10,
+    borderRadius: 5,
+    width: 100,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

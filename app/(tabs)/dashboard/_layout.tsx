@@ -8,34 +8,12 @@ function DashboardLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Dashboard",
-          headerRight: () => (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-              <Link href="/(tabs)/dashboard/user">
-                <Image
-                  source={{
-                    uri: "https://github.com/desi-10.png",
-                  }}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    margin: 10,
-                  }}
-                />
-              </Link>
-            </View>
-          ),
-          //navigation button default navigation button
-          headerLeft: () => <View></View>,
+          title: "Posts",
         }}
       />
-      <Stack.Screen name="user" options={{ presentation: "modal" }} />
+      <Stack.Screen name="[id]/index" options={{ title: "Post Details" }} />
+      <Stack.Screen name="createPost" options={{ title: "Create Post" }} />
+      {/* <Stack.Screen name="[id].tsx" options={{ title: "Produce Details" }} /> */}
     </Stack>
   );
 }
