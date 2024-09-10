@@ -80,7 +80,7 @@ const NotificationsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Notifications</Text>
+      {/* <Text style={styles.header}>Notifications</Text> */}
       <ScrollView style={styles.scrollView}>
         {data.map((notification) => (
           <View key={notification.id} style={styles.notificationCard}>

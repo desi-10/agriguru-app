@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { Platform } from "react-native";
 
-interface User {
+export interface User {
   user_id: string;
   username: string;
   token: string;

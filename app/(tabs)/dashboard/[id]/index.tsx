@@ -86,7 +86,10 @@ const ProduceDetailScreen = () => {
       </Modal>
 
       <View style={{ position: "relative" }}>
-        <Image source={{ uri: produce?.image || "" }} style={styles.image} />
+        <Image
+          source={{ uri: produce?.image || "https://via.placeholder.com/300" }}
+          style={styles.image}
+        />
         <View
           style={[
             produce?.is_sold_out

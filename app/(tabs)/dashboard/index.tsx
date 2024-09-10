@@ -133,15 +133,6 @@ const DashBoard = () => {
           ListFooterComponent={() => <View style={{ height: 100 }} />}
         />
       )}
-
-      {loading !== true && (
-        <TouchableOpacity
-          style={styles.floatingButton}
-          onPress={() => router.push("/(tabs)/dashboard/createPost")}
-        >
-          <Text style={styles.addIcon}>+</Text>
-        </TouchableOpacity>
-      )}
     </ScrollView>
   );
 };

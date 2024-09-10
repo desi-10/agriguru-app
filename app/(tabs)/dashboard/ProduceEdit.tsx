@@ -8,13 +8,16 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Picker,
   Alert,
+  ScrollView,
+  Modal,
+  FlatList,
 } from "react-native";
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { Picker } from "@react-native-picker/picker";
 
 const ProduceEditScreen = () => {
   const { id } = useLocalSearchParams();
@@ -23,12 +26,39 @@ const ProduceEditScreen = () => {
   const [isNegotiable, setIsNegotiable] = useState(false);
   const [expectedQuantity, setExpectedQuantity] = useState("");
   const [pricePerTon, setPricePerTon] = useState("");
-  const [expectedHarvestDate, setExpectedHarvestDate] = useState(new Date());
+  const [expectedHarvestDate, setExpectedHarvestDate] = useState<Date | null>(
+    null
+  );
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isSoldOut, setIsSoldOut] = useState(false);
   const [farmer, setFarmer] = useState<any>();
   const [produceType, setProduceType] = useState<any>();
   const [image, setImage] = useState("");
+  const [isProduceTypeModalVisible, setProduceTypeModalVisible] =
+    useState(false);
+
+  const produceTypes = [
+    { id: null, label: "Select Produce Type" },
+    { id: "1", label: "Produce Type 1" },
+    { id: "2", label: "Produce Type 2" },
+    // Add more produce types as needed
+  ];
+
+  const renderProduceTypeItem = ({
+    item,
+  }: {
+    item: { id: string | null; label: string };
+  }) => (
+    <TouchableOpacity
+      style={styles.produceTypeItem}
+      onPress={() => {
+        setProduceType({ id: item.id });
+        setProduceTypeModalVisible(false);
+      }}
+    >
+      <Text>{item.label}</Text>
+    </TouchableOpacity>
+  );
 
   useEffect(() => {
     const fetchProduce = async () => {
@@ -41,7 +71,12 @@ const ProduceEditScreen = () => {
       setIsNegotiable(data.is_negotiable);
       setExpectedQuantity(data.expected_quantity);
       setPricePerTon(data.price_per_ton);
-      setExpectedHarvestDate(data.expected_harvest_date);
+      // Convert the expected harvest date to a valid Date object
+      if (data.expected_harvest_date) {
+        setExpectedHarvestDate(new Date(data.expected_harvest_date));
+      } else {
+        setExpectedHarvestDate(null);
+      }
       setIsSoldOut(data.is_sold_out);
       setFarmer(data.farmer);
       setProduceType(data.produce);
@@ -56,7 +91,9 @@ const ProduceEditScreen = () => {
       is_negotiable: isNegotiable,
       expected_quantity: parseInt(expectedQuantity),
       price_per_ton: parseFloat(pricePerTon),
-      expected_harvest_date: expectedHarvestDate,
+      expected_harvest_date: expectedHarvestDate
+        ? expectedHarvestDate.toISOString().split("T")[0] // format date to 'YYYY-MM-DD'
+        : null,
       is_sold_out: isSoldOut,
       farmer: parseInt(farmer?.id),
       produce: produceType?.id,
@@ -109,90 +146,119 @@ const ProduceEditScreen = () => {
     hideDatePicker();
   };
 
+  const handleDateConfirm = (date: Date) => {
+    setExpectedHarvestDate(date);
+    setDatePickerVisibility(false);
+  };
+
   return (
-    <View style={styles.container}>
-      {image && <Image source={{ uri: image }} style={styles.image} />}
-      <TouchableOpacity style={styles.button} onPress={handleUploadImage}>
-        <Text style={styles.buttonText}>Select Image</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <TouchableOpacity onPress={handleUploadImage}>
+        <Image source={{ uri: image }} style={styles.image} />
       </TouchableOpacity>
 
-      <Text>Location</Text>
       <TextInput
         style={styles.input}
+        placeholder="Location"
         value={location}
         onChangeText={setLocation}
-        placeholder="Enter location"
       />
 
-      <Text>Description</Text>
       <TextInput
         style={styles.input}
+        placeholder="Description"
         value={description}
         onChangeText={setDescription}
-        placeholder="Enter description"
       />
 
-      <Text>Is Negotiable</Text>
-      <Switch value={isNegotiable} onValueChange={setIsNegotiable} />
-
-      <Text>Expected Quantity (Tons)</Text>
       <TextInput
         style={styles.input}
+        placeholder="Expected Quantity"
         value={expectedQuantity}
         onChangeText={setExpectedQuantity}
-        placeholder="Enter expected quantity"
         keyboardType="numeric"
       />
 
-      <Text>Price per Ton (GHC)</Text>
       <TextInput
         style={styles.input}
+        placeholder="Price per Ton"
         value={pricePerTon}
         onChangeText={setPricePerTon}
-        placeholder="Enter price per ton"
         keyboardType="numeric"
       />
 
-      <Text>Expected Harvest Date</Text>
-      <TouchableOpacity onPress={showDatePicker} style={styles.dateButton}>
-        <Text style={styles.dateButtonText}>
-          {expectedHarvestDate.toDateString()}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.switchContainer}>
+        <Text>Negotiable</Text>
+        <Switch value={isNegotiable} onValueChange={setIsNegotiable} />
+      </View>
+
+      <View style={styles.switchContainer}>
+        <Text>Sold Out</Text>
+        <Switch value={isSoldOut} onValueChange={setIsSoldOut} />
+      </View>
+
+      <View style={styles.dateContainer}>
+        <Button
+          title="Pick Expected Harvest Date"
+          onPress={() => setDatePickerVisibility(true)}
+        />
+        {expectedHarvestDate && (
+          <Text style={styles.dateText}>
+            {expectedHarvestDate.toDateString()}
+          </Text>
+        )}
+      </View>
+
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
-        onConfirm={handleConfirm}
-        onCancel={hideDatePicker}
+        onConfirm={handleDateConfirm}
+        onCancel={() => setDatePickerVisibility(false)}
       />
 
-      <Text>Is Sold Out</Text>
-      <Switch value={isSoldOut} onValueChange={setIsSoldOut} />
-
-      <Text>Produce Type</Text>
-      <Picker
-        selectedValue={produceType}
-        style={styles.input}
-        onValueChange={(itemValue) => setProduceType(itemValue)}
+      <TouchableOpacity
+        style={styles.selectButton}
+        onPress={() => setProduceTypeModalVisible(true)}
       >
-        <Picker.Item label="Select produce" value="" />
-        <Picker.Item label="Maize" value="1" />
-        <Picker.Item label="Rice" value="2" />
-        <Picker.Item label="Tomatoes" value="3" />
-      </Picker>
-
-      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-        <Text style={styles.buttonText}>Update</Text>
+        <Text>
+          {produceType?.id
+            ? produceTypes.find((pt) => pt.id === produceType.id)?.label
+            : "Select Produce Type"}
+        </Text>
       </TouchableOpacity>
-    </View>
+
+      <Modal
+        visible={isProduceTypeModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <FlatList
+              data={produceTypes}
+              renderItem={renderProduceTypeItem}
+              keyExtractor={(item) => item.id?.toString() || "null"}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setProduceTypeModalVisible(false)}
+            >
+              <Text>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
+        <Text style={styles.updateButtonText}>Update Produce</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: "#f4f4f4",
-    flex: 1,
+    padding: 16,
   },
   input: {
     height: 40,
@@ -200,37 +266,76 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
-    borderRadius: 5,
-    backgroundColor: "white",
+    borderRadius: 8,
   },
-  button: {
-    backgroundColor: "#4CAF50",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
-    elevation: 3,
+  switchContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 12,
   },
-  buttonText: {
-    textAlign: "center",
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+  dateContainer: {
+    marginVertical: 12,
   },
-  dateButton: {
-    padding: 10,
-    backgroundColor: "#e7e7e7",
-    borderRadius: 5,
-    marginBottom: 12,
-  },
-  dateButtonText: {
+  dateText: {
+    marginTop: 8,
     fontSize: 16,
     color: "#333",
   },
+  picker: {
+    marginBottom: 12,
+  },
   image: {
-    borderRadius: 10,
     width: "100%",
     height: 200,
-    marginBottom: 20,
+    marginBottom: 12,
+    borderRadius: 8,
+  },
+  selectButton: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 16,
+    width: "80%",
+    maxHeight: "80%",
+  },
+  produceTypeItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  closeButton: {
+    marginTop: 16,
+    alignItems: "center",
+    padding: 8,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+  },
+  updateButton: {
+    marginTop: 16,
+    alignItems: "center",
+    padding: 8,
+    backgroundColor: "#28a745",
+    borderRadius: 8,
+  },
+  updateButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
 });
 

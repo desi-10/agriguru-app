@@ -30,7 +30,7 @@ const LoginScreen = () => {
       );
 
       console.log("Sign-in successful:", data);
-      router.push("/(tabs)/homepage");
+      router.replace("/(tabs)/homepage");
       if (Platform.OS === "web") {
         localStorage.setItem("user", JSON.stringify(data));
       } else {

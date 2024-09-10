@@ -5,6 +5,7 @@ import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useUser } from "@/components/userContext";
+import { View } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -25,7 +26,12 @@ export default function TabLayout() {
         options={{
           title: "Home",
           headerShown: false, // Prevent header on this screen
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "home" : "home-outline"}
+              color="#28a745"
+            />
+          ),
         }}
       />
 
@@ -36,21 +42,58 @@ export default function TabLayout() {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "list" : "list-outline"} // Different icons for focused and unfocused state
-              color={color}
+              name={focused ? "list" : "list-outline"}
+              color="#28a745"
             />
           ),
         }}
       />
 
-      {/* A default/fallback tab in case role is unknown */}
+      <Tabs.Screen
+        name="add"
+        options={{
+          title: "Add",
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={{
+                backgroundColor: "#28a745",
+                width: 50,
+                height: 50,
+                borderRadius: 50,
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: 20,
+                borderWidth: 1,
+                borderColor: "white",
+              }}
+            >
+              <TabBarIcon name="add" color="white" />
+            </View>
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="notification"
         options={{
           title: "Notifications",
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="notifications" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "notifications" : "notifications-outline"}
+              color="#28a745"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="user"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "person" : "person-outline"}
+              color="#28a745"
+            />
           ),
         }}
       />
