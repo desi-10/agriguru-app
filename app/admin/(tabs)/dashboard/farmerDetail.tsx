@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Linking,
 } from "react-native";
 
 type FarmerDetailsProps = {
@@ -92,7 +93,13 @@ const FarmerDetail: React.FC<FarmerDetailsProps> = () => {
         )}
       </View>
 
-      <TouchableOpacity style={styles.button}>
+      {/* onpress should make a call to the farmer */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          Linking.openURL(`tel:${farmer?.phone_number}`);
+        }}
+      >
         <Text style={styles.buttonText}>Contact Farmer</Text>
       </TouchableOpacity>
     </ScrollView>

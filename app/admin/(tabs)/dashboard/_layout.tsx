@@ -13,6 +13,7 @@ function DashboardLayout() {
       />
       <Stack.Screen name="[id]/index" options={{ title: "Post Details" }} />
       <Stack.Screen name="createPost" options={{ title: "Create Post" }} />
+      <Stack.Screen name="farmerDetail" options={{ title: "Farmer Details" }} />
       {/* <Stack.Screen name="[id].tsx" options={{ title: "Produce Details" }} /> */}
     </Stack>
   );

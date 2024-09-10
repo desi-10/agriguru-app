@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,8 +12,20 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
+import { useUser } from "@/components/userContext";
+import { Picker } from "@react-native-picker/picker";
+
+type ProducesType = {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  created_at: string;
+  updated_at: string;
+};
 
 const Add = () => {
+  const { user } = useUser();
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [isNegotiable, setIsNegotiable] = useState(false);
@@ -21,9 +33,20 @@ const Add = () => {
   const [pricePerTon, setPricePerTon] = useState("");
   const [expectedHarvestDate, setExpectedHarvestDate] = useState(new Date());
   const [isSoldOut, setIsSoldOut] = useState(false);
-  const [farmer, setFarmer] = useState("");
   const [produce, setProduce] = useState("");
   const [image, setImage] = useState<string | null>(null);
+  const [produces, setProduces] = useState<ProducesType[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProduce = async () => {
+      const response = await axios.get(
+        "https://agriguru.pythonanywhere.com/api/produces/"
+      );
+      setProduces(response.data);
+    };
+    fetchProduce();
+  }, []);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -39,27 +62,43 @@ const Add = () => {
   };
 
   const handleSubmit = () => {
-    const formData = {
-      location,
-      description,
-      is_negotiable: isNegotiable,
-      expected_quantity: parseInt(expectedQuantity),
-      price_per_ton: parseFloat(pricePerTon),
-      expected_harvest_date: expectedHarvestDate,
-      is_sold_out: isSoldOut,
-      farmer: parseInt(farmer),
-      produce: produce,
-      image: image,
-    };
+    setLoading(true);
+    try {
+      const formData = {
+        location,
+        description,
+        is_negotiable: isNegotiable,
+        expected_quantity: parseInt(expectedQuantity),
+        price_per_ton: parseFloat(pricePerTon),
+        expected_harvest_date: expectedHarvestDate,
+        is_sold_out: isSoldOut,
+        farmer: user?.farmer_id,
+        produce: produce || 1,
+        image: image,
+      };
 
-    axios
-      .post("YOUR_BACKEND_ENDPOINT", formData)
-      .then((response) => {
-        alert("Data submitted successfully!");
-      })
-      .catch((error) => {
-        console.error("There was an error submitting the form!", error);
-      });
+      axios
+        .post("https://agriguru.pythonanywhere.com/api/posts/", formData)
+        .then((response) => {
+          alert("Data submitted successfully!");
+        })
+        .catch((error) => {
+          console.error("There was an error submitting the form!", error);
+        });
+      setLoading(false);
+
+      setLocation("");
+      setDescription("");
+      setIsNegotiable(false);
+      setExpectedQuantity("");
+      setPricePerTon("");
+      setExpectedHarvestDate(new Date());
+      setIsSoldOut(false);
+      setProduce("");
+    } catch (error) {
+      console.error("There was an error submitting the form!", error);
+      setLoading(false);
+    }
   };
 
   return (
@@ -147,21 +186,32 @@ const Add = () => {
           <Switch value={isSoldOut} onValueChange={setIsSoldOut} />
         </View>
 
-        {/* Produce Picker */}
         <View style={styles.section}>
           <Text style={styles.label}>Produce</Text>
-          {/* Produce picker here */}
-          <TextInput
-            style={styles.input}
-            value={produce ? produce : ""}
-            placeholder="Enter produce (e.g. Maize)"
-            onChangeText={(val) => setProduce(val)}
-          />
-        </View>
+          <Picker
+            selectedValue={produce}
+            style={styles.picker}
+            onValueChange={(itemValue) => setProduce(itemValue)}
+          >
+            {produces?.map((item) => (
+              <Picker.Item key={item?.id} label={item?.name} value={item.id} />
+            ))}
+          </Picker>
 
+          {/* Optionally display selected value */}
+          {produce && (
+            <Text style={styles.selectedText}>Selected Produce: {produce}</Text>
+          )}
+        </View>
         {/* Submit Button */}
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit</Text>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          <Text style={styles.submitButtonText}>
+            {loading ? "Submitting..." : "Submit"}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -231,6 +281,17 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: "#fff",
     fontSize: 18,
+  },
+  picker: {
+    height: 50,
+    width: "100%",
+    borderColor: "#ddd",
+    borderWidth: 1,
+  },
+  selectedText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#34495E",
   },
 });
 
