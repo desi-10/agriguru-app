@@ -37,7 +37,9 @@ const ProduceDetailScreen = () => {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await axios.delete(`https://agriguru.pythonanywhere.com/api/posts/${id}`);
+      await axios.delete(
+        `https://agriguru.pythonanywhere.com/api/posts/${id}/`
+      );
       setIsDeleting(false);
       setModalVisible(false);
       Alert.alert("Success", "Produce deleted successfully");

@@ -39,13 +39,7 @@ const UserComponent = () => {
       <View style={styles.profileOptions}>
         <TouchableOpacity
           style={styles.optionItem}
-          onPress={() => router.push("/user/orders")}
-        >
-          <Text style={styles.optionText}>View Orders</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.optionItem}
-          onPress={() => router.push("/user/editProfile")}
+          onPress={() => router.push("/farmer/(tabs)/user/editProfile")}
         >
           <Text style={styles.optionText}>Edit Profile</Text>
         </TouchableOpacity>

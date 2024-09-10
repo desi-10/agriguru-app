@@ -19,6 +19,8 @@ type Notification = {
   pickup_date: string;
   expanded: boolean;
   message: string;
+  rejected: boolean;
+  accepted: boolean;
 };
 
 const NotificationsScreen: React.FC = () => {
@@ -36,7 +38,10 @@ const NotificationsScreen: React.FC = () => {
       const response = await axios.get(
         "https://agriguru.pythonanywhere.com/api/purchase-request/"
       );
-      setData(response.data);
+      const filteredData = response.data.filter(
+        (notification: Notification) => notification?.accepted === true
+      );
+      setData(filteredData);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -59,8 +64,8 @@ const NotificationsScreen: React.FC = () => {
   const handleAccept = async (notification: Notification) => {
     setShowAcceptModal(false);
     try {
-      const response = await axios.post(
-        `https://agriguru.pythonanywhere.com/api/purchase-response/`,
+      const response = await axios.patch(
+        `https://agriguru.pythonanywhere.com/api/purchase-response/${notification.id}/`,
         {
           accepted: true,
           price_per_ton: notification.proposed_price,
@@ -78,11 +83,13 @@ const NotificationsScreen: React.FC = () => {
   const handleIgnore = async (notification: Notification) => {
     setShowIgnoreModal(false);
     try {
-      const response = await axios.post(
-        `https://example.com/api/ignore/${notification.id}`,
+      const response = await axios.patch(
+        `https://agriguru.pythonanywhere.com/api/purchase-response/${notification.id}/`,
         {
-          accepted: false,
+          rejected: true,
+          price_per_ton: 0,
           purchase_request: notification.id,
+          farmer: user?.farmer_id,
         }
       );
       console.log("Notification ignored:", response.data);
