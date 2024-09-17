@@ -85,7 +85,7 @@ const DashBoard = () => {
     >
       <Image
         source={{
-          uri: item?.image || "",
+          uri: item?.image || "http://via.placeholder.com/150",
         }}
         style={styles.productImage}
       />

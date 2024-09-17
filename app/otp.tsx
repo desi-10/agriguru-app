@@ -92,6 +92,12 @@ const OtpInputScreen: React.FC = () => {
       <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <Text style={styles.submitButtonText}>Submit</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => router.push("/sign-in")}>
+        <Text style={{ color: "#4CAF50", marginTop: 20 }}>
+          Back to Sign In page
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -117,8 +123,9 @@ const styles = StyleSheet.create({
   },
   otpContainer: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    width: "80%",
+    width: "100%",
   },
   otpInput: {
     backgroundColor: "#F4F4F4",

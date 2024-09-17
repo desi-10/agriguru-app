@@ -14,6 +14,9 @@ export interface User {
   token: string;
   farmer_id: number;
   role: string;
+  first_name: string;
+  last_name: string;
+  email: string;
 }
 
 interface UserContextType {

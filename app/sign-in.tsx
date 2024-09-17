@@ -9,11 +9,13 @@ import {
   Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import axios from "axios";
+import axios, { Axios, AxiosError } from "axios";
 import { Link, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useUser } from "@/components/userContext";
 
 const LoginScreen = () => {
+  const { setUser } = useUser();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,6 +32,7 @@ const LoginScreen = () => {
       );
 
       console.log("Sign-in successful:", data);
+      setUser(data);
       if (Platform.OS === "web") {
         localStorage.setItem("user", JSON.stringify(data));
       } else {
@@ -43,6 +46,22 @@ const LoginScreen = () => {
       }
     } catch (error) {
       setLoading(false);
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 403) {
+          Alert.alert("Error", error.response?.data?.error);
+          router.push({
+            pathname: "/otp",
+            params: {
+              phone_number: phoneNumber,
+            },
+          });
+          return;
+        }
+        console.error("Sign-in error:", error.response?.data?.error);
+        console.error("Sign-in error:", error.response?.data?.error);
+        Alert.alert("Error", error.response?.data?.error);
+        return;
+      }
       console.error("Sign-in error:", error);
       Alert.alert("Error", "Failed to sign in. Please try again.");
     }

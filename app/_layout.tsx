@@ -35,22 +35,20 @@ export default function RootLayout() {
 
   return (
     <UserProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <ProtectedRoute>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="farmer/(tabs)" />
-            <Stack.Screen name="admin/(tabs)" />
-          </Stack>
-        </ProtectedRoute>
-        <ProtectedLogin>
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-            <Stack.Screen name="sign-up" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </ProtectedLogin>
-      </ThemeProvider>
+      <ProtectedRoute>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="farmer/(tabs)" />
+          <Stack.Screen name="admin/(tabs)" />
+        </Stack>
+      </ProtectedRoute>
+      <ProtectedLogin>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+          <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </ProtectedLogin>
     </UserProvider>
   );
 }

@@ -21,6 +21,7 @@ type Notification = {
   message: string;
   rejected: boolean;
   accepted: boolean;
+  purchase_request: number;
 };
 
 const NotificationsScreen: React.FC = () => {
@@ -35,11 +36,16 @@ const NotificationsScreen: React.FC = () => {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        "https://agriguru.pythonanywhere.com/api/purchase-request/"
+      const { data } = await axios.get(
+        `https://agriguru.pythonanywhere.com/api/purchase-response/`,
+        {
+          params: {
+            farmer: user?.farmer_id,
+          },
+        }
       );
-      const filteredData = response.data.filter(
-        (notification: Notification) => notification?.accepted === true
+      const filteredData = data.filter(
+        (notification: Notification) => notification?.accepted !== true
       );
       setData(filteredData);
       setLoading(false);
@@ -69,7 +75,7 @@ const NotificationsScreen: React.FC = () => {
         {
           accepted: true,
           price_per_ton: notification.proposed_price,
-          purchase_request: notification.id,
+          purchase_request: notification?.purchase_request,
           farmer: user?.farmer_id,
         }
       );

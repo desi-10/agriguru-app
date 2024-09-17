@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Link, router, useRouter } from "expo-router";
 
 const CreateAccountScreen = () => {
@@ -41,6 +41,11 @@ const CreateAccountScreen = () => {
         },
       });
     } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error("Sign-up error:", error.response?.data?.error);
+        Alert.alert("Error", error.response?.data?.error);
+        return;
+      }
       console.error("Sign-up error:", error);
       Alert.alert("Error", "Failed to create account. Please try again.");
     }
