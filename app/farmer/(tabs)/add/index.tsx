@@ -47,6 +47,8 @@ const Add = () => {
         const response = await axios.get(
           "https://agriguru.pythonanywhere.com/api/produces/"
         );
+        console.log(response.data);
+
         setProduces(response.data);
       } catch (error) {
         console.error("Error fetching produces:", error);
@@ -239,11 +241,10 @@ const Add = () => {
         <Text style={styles.label}>Produce</Text>
         <RNPickerSelect
           onValueChange={(value) => console.log(value)}
-          items={[
-            { label: "Football", value: "football" },
-            { label: "Baseball", value: "baseball" },
-            { label: "Hockey", value: "hockey" },
-          ]}
+          items={produces.map((produce) => ({
+            label: produce.name,
+            value: produce.id.toString(),
+          }))}
         />
       </View>
 

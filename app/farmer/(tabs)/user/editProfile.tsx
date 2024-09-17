@@ -33,7 +33,10 @@ const EditProfile = () => {
         updatedUserData
       );
 
-      setUser(data);
+      setUser({
+        ...data,
+        user_id: data?.user,
+      });
       Alert.alert("Success", "Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
