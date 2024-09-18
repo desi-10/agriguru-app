@@ -36,7 +36,7 @@ const Orders = () => {
           "https://agriguru.pythonanywhere.com/api/orders/",
           {
             params: {
-              farmer_id: user?.farmer_id,
+              farmer: user?.farmer_id,
             },
           }
         );
