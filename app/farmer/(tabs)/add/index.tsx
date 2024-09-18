@@ -235,10 +235,10 @@ const Add = () => {
       </View>
 
       {/* Is Sold Out Switch */}
-      <View style={styles.sectionSwitch}>
+      {/* <View style={styles.sectionSwitch}>
         <Text style={styles.label}>Is Sold Out?</Text>
         <Switch value={isSoldOut} onValueChange={setIsSoldOut} />
-      </View>
+      </View> */}
 
       {/* Produce Picker */}
       <View style={styles.section}>
