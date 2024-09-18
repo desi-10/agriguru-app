@@ -13,13 +13,19 @@ import axios, { Axios, AxiosError } from "axios";
 import { Link, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/components/userContext";
+import { useFonts } from "expo-font";
+import { Montserrat_400Regular } from "@expo-google-fonts/montserrat";
 
 const LoginScreen = () => {
+  const [loaded, error] = useFonts({
+    Montserrat_400Regular,
+  });
   const { setUser } = useUser();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
   const handleSignIn = async () => {
     setLoading(true);
     try {
@@ -39,6 +45,7 @@ const LoginScreen = () => {
         await AsyncStorage.setItem("user", JSON.stringify(data));
       }
       setLoading(false);
+      router.dismissAll();
       if (data?.role?.toLowerCase() === "admin") {
         router.replace("/admin/(tabs)/homepage");
       } else {

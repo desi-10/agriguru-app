@@ -2,123 +2,87 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
+  Image,
+  StyleSheet,
   TextInput,
   Switch,
-  Button,
-  StyleSheet,
-  Image,
   TouchableOpacity,
-  Alert,
   ScrollView,
-  Modal,
-  FlatList,
 } from "react-native";
-import axios from "axios";
-import { useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import axios from "axios";
+import { useUser } from "@/components/userContext";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Picker } from "@react-native-picker/picker";
+import RNPickerSelect from "react-native-picker-select";
+import { router, useLocalSearchParams } from "expo-router";
 
-const ProduceEditScreen = () => {
+type ProducesType = {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  created_at: string;
+  updated_at: string;
+};
+
+const Edit = () => {
+  const { user } = useUser();
   const { id } = useLocalSearchParams();
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [isNegotiable, setIsNegotiable] = useState(false);
   const [expectedQuantity, setExpectedQuantity] = useState("");
   const [pricePerTon, setPricePerTon] = useState("");
-  const [expectedHarvestDate, setExpectedHarvestDate] = useState<Date | null>(
-    null
-  );
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [expectedHarvestDate, setExpectedHarvestDate] = useState(new Date());
   const [isSoldOut, setIsSoldOut] = useState(false);
-  const [farmer, setFarmer] = useState<any>();
-  const [produceType, setProduceType] = useState<any>();
-  const [image, setImage] = useState("");
-  const [isProduceTypeModalVisible, setProduceTypeModalVisible] =
-    useState(false);
-
-  const produceTypes = [
-    { id: null, label: "Select Produce Type" },
-    { id: "1", label: "Produce Type 1" },
-    { id: "2", label: "Produce Type 2" },
-    // Add more produce types as needed
-  ];
-
-  const renderProduceTypeItem = ({
-    item,
-  }: {
-    item: { id: string | null; label: string };
-  }) => (
-    <TouchableOpacity
-      style={styles.produceTypeItem}
-      onPress={() => {
-        setProduceType({ id: item.id });
-        setProduceTypeModalVisible(false);
-      }}
-    >
-      <Text>{item.label}</Text>
-    </TouchableOpacity>
-  );
+  const [produce, setProduce] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const [produces, setProduces] = useState<ProducesType[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   useEffect(() => {
-    const fetchProduce = async () => {
-      const { data } = await axios.get(
-        `https://agriguru.pythonanywhere.com/api/posts/${id}`
-      );
-      setImage(data.image);
-      setLocation(data.location);
-      setDescription(data.description);
-      setIsNegotiable(data.is_negotiable);
-      setExpectedQuantity(data.expected_quantity);
-      setPricePerTon(data.price_per_ton);
-      // Convert the expected harvest date to a valid Date object
-      if (data.expected_harvest_date) {
-        setExpectedHarvestDate(new Date(data.expected_harvest_date));
-      } else {
-        setExpectedHarvestDate(null);
+    const fetchProduces = async () => {
+      try {
+        const response = await axios.get(
+          "https://agriguru.pythonanywhere.com/api/produces/"
+        );
+        console.log(response.data);
+
+        setProduces(response.data);
+      } catch (error) {
+        console.error("Error fetching produces:", error);
       }
-      setIsSoldOut(data.is_sold_out);
-      setFarmer(data.farmer);
-      setProduceType(data.produce);
     };
-    fetchProduce();
+    fetchProduces();
+  }, []);
+
+  // Fetch produce details and pre-fill the form
+  useEffect(() => {
+    const fetchProduces = async () => {
+      try {
+        const response = await axios.get(
+          `https://agriguru.pythonanywhere.com/api/posts/${id}/`
+        );
+        const data = response.data;
+
+        setLocation(data.location);
+        setDescription(data.description);
+        setIsNegotiable(data.is_negotiable);
+        setExpectedQuantity(data.expected_quantity.toString());
+        setPricePerTon(data.price_per_ton.toString());
+        setExpectedHarvestDate(new Date(data.expected_harvest_date));
+        setIsSoldOut(data.is_sold_out);
+        setProduce(data.produce.id.toString());
+        setImage(data.photo);
+      } catch (error) {
+        console.error("Error fetching produce details:", error);
+      }
+    };
+    fetchProduces();
   }, [id]);
 
-  const handleUpdate = () => {
-    const formData = {
-      location,
-      description,
-      is_negotiable: isNegotiable,
-      expected_quantity: parseInt(expectedQuantity),
-      price_per_ton: parseFloat(pricePerTon),
-      expected_harvest_date: expectedHarvestDate
-        ? expectedHarvestDate.toISOString().split("T")[0] // format date to 'YYYY-MM-DD'
-        : null,
-      is_sold_out: isSoldOut,
-      farmer: parseInt(farmer?.id),
-      produce: produceType?.id,
-    };
-
-    axios
-      .patch(`https://agriguru.pythonanywhere.com/api/posts/${id}/`, formData)
-      .then(() => {
-        Alert.alert("Success", "Data updated successfully!");
-      })
-      .catch((error) => {
-        console.error("Error updating the form!", error);
-        Alert.alert("Error", "There was an issue updating the data.");
-      });
-  };
-
-  const handleUploadImage = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      alert("You've refused to allow this app to access your photos!");
-      return;
-    }
-
+  const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -126,24 +90,9 @@ const ProduceEditScreen = () => {
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       setImage(result.assets[0].uri);
-      // TODO: Implement the actual image upload to your server here
-      console.log("Image selected:", result.assets[0].uri);
     }
-  };
-
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
-  };
-
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-  };
-
-  const handleConfirm = (date: Date) => {
-    setExpectedHarvestDate(date);
-    hideDatePicker();
   };
 
   const handleDateConfirm = (date: Date) => {
@@ -151,106 +100,186 @@ const ProduceEditScreen = () => {
     setDatePickerVisibility(false);
   };
 
+  const handleSubmit = async () => {
+    setLoading(true);
+
+    // Validate required fields
+    if (!location.trim()) {
+      alert("Location cannot be blank.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("location", location);
+      formData.append("description", description);
+      formData.append("is_negotiable", isNegotiable.toString());
+      formData.append("expected_quantity", expectedQuantity.toString());
+      formData.append("price_per_ton", pricePerTon.toString());
+      formData.append(
+        "expected_harvest_date",
+        expectedHarvestDate.toISOString()
+      );
+      formData.append("is_sold_out", isSoldOut.toString());
+      formData.append("farmer", user?.farmer_id?.toString() || "");
+      formData.append("produce", produce.toString() || "1");
+
+      if (image && !image.startsWith("http")) {
+        const fileUri = image;
+        const fileName = fileUri.split("/").pop();
+        const fileType = fileName?.split(".").pop();
+
+        formData.append("photo", {
+          uri: fileUri,
+          name: fileName || "photo",
+          type: `image/${fileType}`,
+        } as unknown as Blob);
+      }
+
+      await axios.put(
+        `https://agriguru.pythonanywhere.com/api/posts/${id}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      alert("Data updated successfully!");
+      router.push("/farmer/dashboard");
+    } catch (error) {
+      console.error("Error updating the form!", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity onPress={handleUploadImage}>
-        <Image source={{ uri: image }} style={styles.image} />
-      </TouchableOpacity>
+      <View style={styles.section}>
+        <Text style={styles.label}>Upload Image</Text>
+        <TouchableOpacity style={styles.imageUpload} onPress={pickImage}>
+          {image ? (
+            <Image source={{ uri: image }} style={styles.image} />
+          ) : (
+            <Text style={styles.imagePlaceholder}>Pick an image</Text>
+          )}
+        </TouchableOpacity>
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Location"
-        value={location}
-        onChangeText={setLocation}
-      />
+      <View style={styles.section}>
+        <Text style={styles.label}>Location</Text>
+        <TextInput
+          style={styles.input}
+          value={location}
+          onChangeText={setLocation}
+          placeholder="Enter location"
+        />
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Description"
-        value={description}
-        onChangeText={setDescription}
-      />
+      <View style={styles.section}>
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          style={styles.textarea}
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Enter description"
+          multiline={true}
+          numberOfLines={4}
+        />
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Expected Quantity"
-        value={expectedQuantity}
-        onChangeText={setExpectedQuantity}
-        keyboardType="numeric"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Price per Ton"
-        value={pricePerTon}
-        onChangeText={setPricePerTon}
-        keyboardType="numeric"
-      />
-
-      <View style={styles.switchContainer}>
-        <Text>Negotiable</Text>
+      <View style={styles.sectionSwitch}>
+        <Text style={styles.label}>Is Negotiable?</Text>
         <Switch value={isNegotiable} onValueChange={setIsNegotiable} />
       </View>
 
-      <View style={styles.switchContainer}>
-        <Text>Sold Out</Text>
+      <View style={styles.section}>
+        <Text style={styles.label}>Expected Quantity (Tons)</Text>
+        <TextInput
+          style={styles.input}
+          value={expectedQuantity}
+          onChangeText={setExpectedQuantity}
+          placeholder="Enter expected quantity"
+          keyboardType="numeric"
+        />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>Price per Ton (GHC)</Text>
+        <TextInput
+          style={styles.input}
+          value={pricePerTon}
+          onChangeText={setPricePerTon}
+          placeholder="Enter price per ton"
+          keyboardType="numeric"
+        />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>Expected Harvest Date</Text>
+        <TouchableOpacity
+          onPress={() => setDatePickerVisibility(true)}
+          style={styles.datePickerButton}
+        >
+          <Text style={styles.datePickerText}>
+            {expectedHarvestDate.toDateString()}
+          </Text>
+        </TouchableOpacity>
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          date={expectedHarvestDate}
+          onConfirm={handleDateConfirm}
+          onCancel={() => setDatePickerVisibility(false)}
+        />
+      </View>
+
+      <View style={styles.sectionSwitch}>
+        <Text style={styles.label}>Is Sold Out?</Text>
         <Switch value={isSoldOut} onValueChange={setIsSoldOut} />
       </View>
 
-      <View style={styles.dateContainer}>
-        <Button
-          title="Pick Expected Harvest Date"
-          onPress={() => setDatePickerVisibility(true)}
+      <View style={styles.section}>
+        <Text style={styles.label}>Produce</Text>
+        <RNPickerSelect
+          onValueChange={(value) => setProduce(value)}
+          style={{
+            inputAndroid: {
+              height: 40,
+              borderColor: "#ddd",
+              borderWidth: 1,
+              paddingHorizontal: 10,
+              borderRadius: 5,
+            },
+            inputIOS: {
+              height: 40,
+              borderColor: "#ddd",
+              borderWidth: 1,
+              paddingHorizontal: 10,
+              borderRadius: 5,
+              fontSize: 16,
+              color: "#333",
+            },
+          }}
+          items={produces.map((produce) => ({
+            label: produce.name,
+            value: produce.id.toString(),
+          }))}
+          value={produce}
         />
-        {expectedHarvestDate && (
-          <Text style={styles.dateText}>
-            {expectedHarvestDate.toDateString()}
-          </Text>
-        )}
       </View>
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={handleDateConfirm}
-        onCancel={() => setDatePickerVisibility(false)}
-      />
-
       <TouchableOpacity
-        style={styles.selectButton}
-        onPress={() => setProduceTypeModalVisible(true)}
+        style={styles.submitButton}
+        onPress={handleSubmit}
+        disabled={loading}
       >
-        <Text>
-          {produceType?.id
-            ? produceTypes.find((pt) => pt.id === produceType.id)?.label
-            : "Select Produce Type"}
+        <Text style={styles.submitButtonText}>
+          {loading ? "Updating..." : "Update"}
         </Text>
-      </TouchableOpacity>
-
-      <Modal
-        visible={isProduceTypeModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <FlatList
-              data={produceTypes}
-              renderItem={renderProduceTypeItem}
-              keyExtractor={(item) => item.id?.toString() || "null"}
-            />
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setProduceTypeModalVisible(false)}
-            >
-              <Text>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
-        <Text style={styles.updateButtonText}>Update Produce</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -258,85 +287,84 @@ const ProduceEditScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 20,
+    backgroundColor: "#f4f4f4",
+    flexGrow: 1,
   },
-  input: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+  section: {
+    marginBottom: 15,
   },
-  switchContainer: {
+  sectionSwitch: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 12,
+    alignItems: "center",
+    marginBottom: 15,
   },
-  dateContainer: {
-    marginVertical: 12,
-  },
-  dateText: {
-    marginTop: 8,
+  label: {
     fontSize: 16,
-    color: "#333",
+    fontWeight: "bold",
+    marginBottom: 8,
   },
-  picker: {
-    marginBottom: 12,
+  input: {
+    borderColor: "#ddd",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    height: 40,
+    fontSize: 16,
+  },
+  textarea: {
+    borderColor: "#ddd",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    fontSize: 16,
+    minHeight: 80,
+    textAlignVertical: "top",
+    height: 100,
+  },
+  imageUpload: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderColor: "#ddd",
+    borderWidth: 1,
+    borderRadius: 5,
+    height: 200,
+    marginBottom: 10,
   },
   image: {
     width: "100%",
-    height: 200,
-    marginBottom: 12,
-    borderRadius: 8,
+    height: "100%",
+    borderRadius: 5,
   },
-  selectButton: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    backgroundColor: "white",
-    borderRadius: 8,
-    padding: 16,
-    width: "80%",
-    maxHeight: "80%",
-  },
-  produceTypeItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  closeButton: {
-    marginTop: 16,
-    alignItems: "center",
-    padding: 8,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-  },
-  updateButton: {
-    marginTop: 16,
-    alignItems: "center",
-    padding: 8,
-    backgroundColor: "#28a745",
-    borderRadius: 8,
-  },
-  updateButtonText: {
-    color: "#fff",
+  imagePlaceholder: {
+    color: "#888",
     fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+  },
+  datePickerButton: {
+    borderColor: "#ddd",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    height: 40,
+    justifyContent: "center",
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  submitButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 15,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 
-export default ProduceEditScreen;
+export default Edit;

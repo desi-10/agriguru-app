@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, FlatList, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useUser } from "@/components/userContext";
@@ -19,6 +26,7 @@ const Orders = () => {
   const { user } = useUser();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -42,6 +50,25 @@ const Orders = () => {
     fetchOrders();
   }, [user?.farmer_id]);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const { data } = await axios.get(
+        "https://agriguru.pythonanywhere.com/api/orders/",
+        {
+          params: {
+            farmer_id: user?.farmer_id,
+          },
+        }
+      );
+      setOrders(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
@@ -51,7 +78,12 @@ const Orders = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      contentContainerStyle={styles.scrollViewContent}
+    >
       <View style={styles.container}>
         {orders.length === 0 ? (
           <Text style={styles.emptyText}>No orders found.</Text>

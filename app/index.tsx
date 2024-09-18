@@ -1,9 +1,12 @@
+import { useUser } from "@/components/userContext";
 import { Link, useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 
 const AgriguruScreen = () => {
+  const { user } = useUser();
   const router = useRouter();
+
   return (
     <View style={styles.container}>
       {/* Logo and Top Green Leaf */}

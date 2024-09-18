@@ -1,15 +1,8 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Montserrat_400Regular, useFonts } from "@expo-google-fonts/montserrat";
 import * as SplashScreen from "expo-splash-screen";
+import { Stack } from "expo-router";
 import { useEffect } from "react";
 import "react-native-reanimated";
-
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { UserProvider } from "@/components/userContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProtectedLogin from "@/components/ProtectedLogin";
@@ -18,16 +11,15 @@ import ProtectedLogin from "@/components/ProtectedLogin";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+  const [loaded, error] = useFonts({
+    Montserrat: Montserrat_400Regular,
   });
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded || error) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, error]);
 
   if (!loaded) {
     return null;

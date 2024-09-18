@@ -102,15 +102,14 @@ const Add = () => {
       formData.append("produce", produce.toString() || "1");
 
       if (image) {
-        const fileUri = image;
-        const fileName = fileUri.split("/").pop();
-        const fileType = fileName?.split(".").pop();
+        const filename = image.split("/").pop();
+        const type = `image/${filename?.split(".").pop()}`;
 
-        formData.append("photo", {
-          uri: fileUri,
-          name: fileName || "photo",
-          type: `image/${fileType}`,
-        } as unknown as Blob);
+        formData.append("image", {
+          uri: image,
+          name: filename,
+          type,
+        } as any);
       }
 
       await axios.post(
@@ -241,6 +240,24 @@ const Add = () => {
         <Text style={styles.label}>Produce</Text>
         <RNPickerSelect
           onValueChange={(value) => console.log(value)}
+          style={{
+            inputAndroid: {
+              height: 40,
+              borderColor: "#ddd",
+              borderWidth: 1,
+              paddingHorizontal: 10,
+              borderRadius: 5,
+            },
+            inputIOS: {
+              height: 40,
+              borderColor: "#ddd",
+              borderWidth: 1,
+              paddingHorizontal: 10,
+              borderRadius: 5,
+              fontSize: 16,
+              color: "#333",
+            },
+          }}
           items={produces.map((produce) => ({
             label: produce.name,
             value: produce.id.toString(),
@@ -295,6 +312,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: "#fff",
     textAlignVertical: "top",
+    height: 100,
+    padding: 10,
   },
   imageUpload: {
     height: 150,
@@ -328,7 +347,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   submitButton: {
-    backgroundColor: "#007bff",
+    backgroundColor: "#4CAF50",
     paddingVertical: 15,
     borderRadius: 5,
     alignItems: "center",

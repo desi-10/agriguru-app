@@ -9,14 +9,17 @@ import React, {
 import { Platform } from "react-native";
 
 export interface User {
-  user_id: string;
-  username: string;
-  token: string;
-  farmer_id: number;
-  role: string;
-  first_name: string;
-  last_name: string;
-  email: string;
+  user_id: string | null;
+  username: string | null;
+  token: string | null;
+  farmer_id: number | null;
+  role: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  profile_picture: string | null;
+  phone_number: string | null;
+  address: string | null;
 }
 
 interface UserContextType {

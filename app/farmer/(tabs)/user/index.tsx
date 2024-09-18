@@ -20,7 +20,8 @@ const UserComponent = () => {
   const handleSignOut = async () => {
     await AsyncStorage.clear();
     setModalVisible(false);
-    router.push("/");
+    router.dismissAll();
+    router.replace("/");
   };
 
   return (
@@ -28,12 +29,20 @@ const UserComponent = () => {
       <View style={styles.profileHeader}>
         <Image
           source={{
-            uri: "https://example.com/user-profile-pic.jpg", // Replace with dynamic user profile picture URL
+            uri:
+              user?.profile_picture ||
+              "https://www.w3schools.com/w3images/avatar2.png",
           }}
           style={styles.profileImage}
         />
-        <Text style={styles.username}>{user?.username}</Text>
-        <Text style={styles.userEmail}>{user?.role || "No email"}</Text>
+        <View style={{ flexDirection: "row", gap: 6 }}>
+          <Text style={styles.username}>{user?.first_name}</Text>
+          <Text style={styles.username}>{user?.last_name}</Text>
+        </View>
+        <Text>{user?.phone_number || "No phone number"}</Text>
+        <Text style={styles.userEmail}>{user?.email || "No email"}</Text>
+        <Text style={styles.userEmail}>{user?.role || "No role"}</Text>
+        <Text style={styles.userEmail}>{user?.address || "No address"}</Text>
       </View>
 
       <View style={styles.profileOptions}>
@@ -94,6 +103,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   profileHeader: {
+    marginTop: 20,
     alignItems: "center",
     marginBottom: 30,
   },

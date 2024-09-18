@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Modal,
+  RefreshControl,
 } from "react-native";
 import axios from "axios";
 import { useUser } from "@/components/userContext";
@@ -32,6 +33,7 @@ const NotificationsScreen: React.FC = () => {
     useState<Notification | null>(null);
   const [showAcceptModal, setShowAcceptModal] = useState<boolean>(false);
   const [showIgnoreModal, setShowIgnoreModal] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -58,6 +60,28 @@ const NotificationsScreen: React.FC = () => {
   useEffect(() => {
     fetchNotifications();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const { data } = await axios.get(
+        `https://agriguru.pythonanywhere.com/api/purchase-response/`,
+        {
+          params: {
+            farmer: user?.farmer_id,
+          },
+        }
+      );
+      const filteredData = data.filter(
+        (notification: Notification) => notification?.accepted !== true
+      );
+      setData(filteredData);
+      setRefreshing(false);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      setRefreshing(false);
+    }
+  };
 
   const toggleAccordion = (id: number) => {
     setData((prevData) =>
@@ -115,57 +139,63 @@ const NotificationsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {data.length === 0 ? (
-          <Text style={styles.emptyText}>No notifications found.</Text>
-        ) : (
-          data.map((notification) => (
-            <View key={notification.id} style={styles.notificationCard}>
-              <TouchableOpacity
-                style={styles.accordionHeader}
-                onPress={() => toggleAccordion(notification.id)}
-              >
-                <Text style={styles.title}>{`We are interested in ${
-                  notification.quantity_requested
-                } units of type ${
-                  notification.produce
-                } produce at a proposed price of $${
-                  notification.proposed_price
-                }, with a pickup date of ${new Date(
-                  notification.pickup_date
-                ).toLocaleDateString()}.`}</Text>
-                <Text style={styles.expandText}>
-                  {notification.expanded ? "Collapse" : "Expand"}
-                </Text>
-              </TouchableOpacity>
-              {notification.expanded && (
-                <View style={styles.accordionContent}>
-                  <Text style={styles.message}>{notification.message}</Text>
-                  <View style={styles.actionButtons}>
-                    <TouchableOpacity
-                      style={styles.acceptButton}
-                      onPress={() => {
-                        setSelectedNotification(notification);
-                        setShowAcceptModal(true);
-                      }}
-                    >
-                      <Text style={styles.buttonText}>Accept</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.ignoreButton}
-                      onPress={() => {
-                        setSelectedNotification(notification);
-                        setShowIgnoreModal(true);
-                      }}
-                    >
-                      <Text style={styles.buttonTextIgnore}>Ignore</Text>
-                    </TouchableOpacity>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.scrollView}>
+          {data.length === 0 ? (
+            <Text style={styles.emptyText}>No notifications found.</Text>
+          ) : (
+            data.map((notification) => (
+              <View key={notification.id} style={styles.notificationCard}>
+                <TouchableOpacity
+                  style={styles.accordionHeader}
+                  onPress={() => toggleAccordion(notification.id)}
+                >
+                  <Text style={styles.title}>{`We are interested in ${
+                    notification.quantity_requested
+                  } units of type ${
+                    notification.produce
+                  } produce at a proposed price of $${
+                    notification.proposed_price
+                  }, with a pickup date of ${new Date(
+                    notification.pickup_date
+                  ).toLocaleDateString()}.`}</Text>
+                  <Text style={styles.expandText}>
+                    {notification.expanded ? "Collapse" : "Expand"}
+                  </Text>
+                </TouchableOpacity>
+                {notification.expanded && (
+                  <View style={styles.accordionContent}>
+                    <Text style={styles.message}>{notification.message}</Text>
+                    <View style={styles.actionButtons}>
+                      <TouchableOpacity
+                        style={styles.acceptButton}
+                        onPress={() => {
+                          setSelectedNotification(notification);
+                          setShowAcceptModal(true);
+                        }}
+                      >
+                        <Text style={styles.buttonText}>Accept</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.ignoreButton}
+                        onPress={() => {
+                          setSelectedNotification(notification);
+                          setShowIgnoreModal(true);
+                        }}
+                      >
+                        <Text style={styles.buttonTextIgnore}>Ignore</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              )}
-            </View>
-          ))
-        )}
+                )}
+              </View>
+            ))
+          )}
+        </View>
       </ScrollView>
 
       {/* Accept Modal */}

@@ -7,9 +7,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
 } from "react-native";
-
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useUser } from "@/components/userContext";
 import axios from "axios";
@@ -49,8 +49,8 @@ const DashBoard = () => {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Replace with your API URL
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -62,7 +62,6 @@ const DashBoard = () => {
           },
         }
       );
-      console.log(data);
       setProducts(data); // Assuming data is an array of products
       setLoading(false);
     } catch (error) {
@@ -71,12 +70,29 @@ const DashBoard = () => {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const { data } = await axios.get(
+        "https://agriguru.pythonanywhere.com/api/posts/",
+        {
+          params: {
+            user_id: user?.user_id,
+          },
+        }
+      );
+      setProducts(data); // Update the product list
+    } catch (error) {
+      console.error(error);
+    }
+    setRefreshing(false);
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
   const renderProduct = ({ item }: { item: Product }) => (
-    // <Link href={`/dashboard/${item.id}`}>
     <TouchableOpacity
       style={styles.productCard}
       onPress={() => {
@@ -98,14 +114,26 @@ const DashBoard = () => {
         <Text style={styles.productPrice}>GH₵ {item.price_per_ton} / ton</Text>
       </View>
     </TouchableOpacity>
-    // </Link>
   );
 
   const headerHeight = useHeaderHeight();
 
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#1E8449" />
+        <Text style={styles.loadingText}>Loading Posts...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView>
-      <View style={[styles.container]}>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <View style={styles.container}>
         <Text
           style={{
             fontSize: 25,
@@ -117,8 +145,8 @@ const DashBoard = () => {
         >
           Manage your posts
         </Text>
-        {loading ? (
-          <ActivityIndicator size="large" color="#4CAF50" />
+        {products?.length === 0 ? (
+          <Text style={styles.emptyText}>No Posts found.</Text>
         ) : (
           <FlatList
             data={products}
@@ -144,20 +172,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     padding: 10,
     position: "relative",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    marginBottom: 20,
-  },
-  menuIcon: {
-    fontSize: 24,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: "bold",
   },
   productList: {
     paddingHorizontal: 10,
@@ -195,12 +209,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
   },
-  productDescription: {
-    color: "#888",
-    fontSize: 14,
-    marginBottom: 5,
-    textAlign: "center",
-  },
   productLocation: {
     fontSize: 12,
     color: "#666",
@@ -210,32 +218,26 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 5,
   },
-  productHarvestDate: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 5,
-  },
-  floatingButton: {
-    position: "absolute",
-    bottom: 30,
-    right: 30,
-    backgroundColor: "#4CAF50",
-    borderRadius: 50,
-    width: 60,
-    height: 60,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 8,
-  },
-  addIcon: {
-    color: "#fff",
-    fontSize: 30,
-    lineHeight: 35,
-  },
   productPrice: {
     fontSize: 12,
     color: "#666",
     marginTop: 5,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#566573",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 18,
+    color: "#1E8449",
   },
 });
 
