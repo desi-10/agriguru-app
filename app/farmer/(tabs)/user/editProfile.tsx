@@ -7,6 +7,9 @@ import {
   StyleSheet,
   Alert,
   Image,
+  ActivityIndicator,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
 import { User, useUser } from "@/components/userContext"; // Ensure the correct path for your context
 import axios from "axios"; // Or you can use `fetch` if you prefer
@@ -21,8 +24,10 @@ const EditProfile = () => {
   const [email, setEmail] = useState<string>(user?.email || "");
   const [address, setAddress] = useState<string>(user?.address || "");
   const [profileImage, setProfileImage] = useState<string>(
-    user?.profile_picture || "https://www.w3schools.com/w3images/avatar2.png"
+    `https://agriguru.pythonanywhere.com${user?.profile_picture}` ||
+      "https://www.w3schools.com/w3images/avatar2.png"
   );
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Function to handle image picker
   const pickImage = async () => {
@@ -51,6 +56,7 @@ const EditProfile = () => {
 
   // Function to handle image upload
   const handleSave = async () => {
+    setLoading(true);
     try {
       // Prepare the form data for submission
       const formData = new FormData();
@@ -63,7 +69,7 @@ const EditProfile = () => {
       formData.append("address", address);
 
       // Append the profile image if it has changed
-      if (profileImage !== user?.profile_picture) {
+      if (!profileImage.startsWith("https://")) {
         formData.append("profile_picture", {
           uri: profileImage,
           name: "profile_image.jpg",
@@ -83,64 +89,81 @@ const EditProfile = () => {
       );
 
       // Update the user context with the new profile data
-      setUser({
-        ...user,
-        ...data, // Spread the returned data to update user info
-        profile_picture: data?.profile_picture || user?.profile_picture, // Ensure we keep the profile picture updated
-      });
-
+      // setUser({
+      //   ...user,
+      //   ...data, // Spread the returned data to update user info
+      //   profile_picture: data?.profile_picture || user?.profile_picture, // Ensure we keep the profile picture updated
+      // });
+      setProfileImage(data?.profile_picture || "");
+      setLoading(false);
       Alert.alert("Success", "Profile updated successfully!");
     } catch (error) {
+      setLoading(false);
       console.error("Error updating profile:", JSON.stringify(error));
       Alert.alert("Error", "An error occurred while updating your profile.");
     }
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={pickImage}>
-        <Image source={{ uri: profileImage }} style={styles.profileImage} />
-      </TouchableOpacity>
+    <ScrollView automaticallyAdjustKeyboardInsets keyboardDismissMode="on-drag">
+      <View style={styles.container}>
+        <TouchableOpacity onPress={pickImage}>
+          <Image
+            source={{
+              uri:
+                profileImage ||
+                `https://agriguru.pythonanywhere.com${user?.profile_picture}`,
+            }}
+            style={styles.profileImage}
+          />
+        </TouchableOpacity>
 
-      <TextInput
-        style={styles.input}
-        placeholder="First Name"
-        value={firstName}
-        onChangeText={setFirstName}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="First Name"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Last Name"
-        value={lastName}
-        onChangeText={setLastName}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Last Name"
+          value={lastName}
+          onChangeText={setLastName}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Address"
-        value={address}
-        onChangeText={setAddress}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Address"
+          value={address}
+          onChangeText={setAddress}
+        />
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>Save Changes</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>
+            {loading ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              "Save Changes"
+            )}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 

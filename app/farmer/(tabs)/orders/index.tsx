@@ -5,6 +5,7 @@ import {
   FlatList,
   ScrollView,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -39,6 +40,8 @@ const Orders = () => {
             },
           }
         );
+        console.log(data);
+
         setOrders(data);
       } catch (error) {
         console.error("Error fetching orders:", error);
@@ -61,6 +64,7 @@ const Orders = () => {
           },
         }
       );
+
       setOrders(data);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -72,6 +76,7 @@ const Orders = () => {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#1E8449" />
         <Text style={styles.loadingText}>Loading Orders...</Text>
       </View>
     );
@@ -93,16 +98,37 @@ const Orders = () => {
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <View style={styles.orderCard}>
-                <Text style={styles.orderTitle}>Order ID: {item.id}</Text>
+                <View style={styles.orderHeader}>
+                  <Text style={styles.orderTitle}>Order ID: {item.id}</Text>
+                  <Text
+                    style={
+                      <Text
+                        style={
+                          ["pending", "completed", "accepted"].includes(
+                            item.order_status
+                          )
+                            ? styles.pendingStatus
+                            : styles.deliveredStatus
+                        }
+                      >
+                        Status: {item.order_status}
+                      </Text> ? (
+                        styles.pendingStatus
+                      ) : (
+                        styles.deliveredStatus
+                      )
+                    }
+                  >
+                    Status: {item.order_status}
+                  </Text>
+                </View>
                 <Text style={styles.orderDescription}>
                   Description: {item.order_description}
                 </Text>
                 <Text style={styles.orderQuantity}>
                   Quantity: {item.quantity}
                 </Text>
-                <Text style={styles.orderStatus}>
-                  Status: {item.order_status}
-                </Text>
+
                 <Text style={styles.orderDate}>
                   Order Date: {new Date(item.order_date).toLocaleDateString()}
                 </Text>
@@ -179,6 +205,20 @@ const styles = StyleSheet.create({
   },
   lastUpdated: {
     fontSize: 14,
+  },
+  pendingStatus: {
+    color: "#1E8449",
+    fontWeight: "bold",
+  },
+  deliveredStatus: {
+    color: "#E74C3C",
+    fontWeight: "bold",
+  },
+  orderHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
   },
 });
 

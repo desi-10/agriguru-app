@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import axios, { AxiosError } from "axios";
@@ -96,7 +97,11 @@ const CreateAccountScreen = () => {
 
       <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
         <Text style={styles.signUpButtonText}>
-          {loading ? "Loading..." : "Sign up"}
+          {loading ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            "Sign up"
+          )}
         </Text>
       </TouchableOpacity>
 

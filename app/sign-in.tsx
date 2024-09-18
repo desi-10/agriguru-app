@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import axios, { Axios, AxiosError } from "axios";
@@ -38,6 +39,8 @@ const LoginScreen = () => {
       );
 
       console.log("Sign-in successful:", data);
+      console.log(JSON.stringify(data));
+
       setUser(data);
       if (Platform.OS === "web") {
         localStorage.setItem("user", JSON.stringify(data));
@@ -111,7 +114,11 @@ const LoginScreen = () => {
       {/* Sign In Button */}
       <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
         <Text style={styles.signInButtonText}>
-          {loading ? "Loading..." : "Sign in"}
+          {loading ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            "Sign in"
+          )}
         </Text>
       </TouchableOpacity>
 

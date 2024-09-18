@@ -9,6 +9,7 @@ import {
   Switch,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
@@ -142,7 +143,11 @@ const Add = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="on-drag"
+      contentContainerStyle={styles.container}
+    >
       {/* Image Upload */}
       <View style={styles.section}>
         <Text style={styles.label}>Upload Image</Text>
@@ -272,7 +277,11 @@ const Add = () => {
         disabled={loading}
       >
         <Text style={styles.submitButtonText}>
-          {loading ? "Submitting..." : "Submit"}
+          {loading ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            "Submit"
+          )}
         </Text>
       </TouchableOpacity>
     </ScrollView>

@@ -50,30 +50,6 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="add"
-        options={{
-          title: "Add",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                backgroundColor: "#28a745",
-                width: 50,
-                height: 50,
-                borderRadius: 50,
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: 20,
-                borderWidth: 1,
-                borderColor: "white",
-              }}
-            >
-              <TabBarIcon name="add" color="white" />
-            </View>
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="notification"
         options={{
           title: "Notifications",
