@@ -89,11 +89,11 @@ const EditProfile = () => {
       );
 
       // Update the user context with the new profile data
-      // setUser({
-      //   ...user,
-      //   ...data, // Spread the returned data to update user info
-      //   profile_picture: data?.profile_picture || user?.profile_picture, // Ensure we keep the profile picture updated
-      // });
+      setUser({
+        ...user,
+        ...data, // Spread the returned data to update user info
+        profile_picture: data?.profile_picture || user?.profile_picture, // Ensure we keep the profile picture updated
+      });
       setProfileImage(data?.profile_picture || "");
       setLoading(false);
       Alert.alert("Success", "Profile updated successfully!");
@@ -107,7 +107,10 @@ const EditProfile = () => {
   return (
     <ScrollView automaticallyAdjustKeyboardInsets keyboardDismissMode="on-drag">
       <View style={styles.container}>
-        <TouchableOpacity onPress={pickImage}>
+        <TouchableOpacity
+          style={styles.profileImageContainer}
+          onPress={pickImage}
+        >
           <Image
             source={{
               uri:
@@ -197,6 +200,11 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 10,
+    margin: 10,
+  },
+  profileImageContainer: {
+    alignItems: "center",
+    margin: 20,
+    borderWidth: 1,
   },
 });

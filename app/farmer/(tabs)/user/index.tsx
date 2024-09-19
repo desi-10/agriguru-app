@@ -38,6 +38,11 @@ const UserComponent = () => {
 
       console.log("Profile refreshed:", JSON.stringify(data));
       setFetchProfile(data?.profile_picture || "");
+      setUser({
+        ...user,
+        ...data,
+        profile_picture: data?.profile_picture || "",
+      });
       setRefreshing(false);
     } catch (error) {
       console.error("Error fetching profile:", error);
