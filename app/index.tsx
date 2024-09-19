@@ -15,7 +15,7 @@ const AgriguruScreen = () => {
           source={{ uri: "https://your-logo-url.png" }} // Replace with your logo URI
           style={styles.logo}
         />
-        <Text style={styles.title}>AGRIGURU</Text>
+        <Text style={styles.title}>EKU CHAIN</Text>
       </View>
 
       {/* Main Text */}

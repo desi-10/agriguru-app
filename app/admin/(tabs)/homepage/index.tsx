@@ -109,7 +109,7 @@ const Homepage = () => {
             color: "#4CAF50",
           }}
         >
-          Welcome to Agriguru
+          Welcome to EKU CHAIN
         </Text>
         {loading ? (
           <ActivityIndicator size="large" color="#4CAF50" />

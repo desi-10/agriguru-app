@@ -49,6 +49,8 @@ const NotificationsScreen: React.FC = () => {
       const filteredData = data.filter(
         (notification: Notification) => notification?.accepted !== true
       );
+      console.log(JSON.stringify(filteredData));
+
       setData(filteredData);
       setLoading(false);
     } catch (error) {
